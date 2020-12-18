@@ -70,12 +70,12 @@ $ curl \
   - `ID` `(string)` - The ID of the server. This is the same as the `Address`
     but may be upgraded to a GUID in a future version of Nomad.
 
-  - `Node` `(string)` - The node name of the server, as known to Nomad, or
+  - `Node` `(string)` - The node name of the server as known to Nomad, or
     `"(unknown)"` if the node is stale and not known.
 
   - `Address` `(string)` - The `ip:port` for the server.
 
-  - `Leader` `(bool)` - is either "true" or "false" depending on the server's
+  - `Leader` `(bool)` - is "true" or "false" depending on the server's
     role in the Raft configuration.
 
   - `Voter` `(bool)` - is "true" or "false", indicating if the server has a vote
