@@ -376,6 +376,9 @@ type Builder struct {
 	// clientSecrets is the secrets dir from the client's perspective; eg <data-dir>/allocs/<task>/secrets
 	clientSecretsDir string
 
+	// clientTaskDir is the task working directory from the client's perspective; eg <data-dir>/allocs/<task>
+	clientTaskDir string
+
 	cpuLimit         int64
 	memLimit         int64
 	taskName         string
@@ -595,7 +598,7 @@ func (b *Builder) Build() *TaskEnv {
 	envMap, deviceEnvs := b.buildEnv(b.allocDir, b.localDir, b.secretsDir, nodeAttrs)
 	envMapClient, _ := b.buildEnv(b.clientAllocDir, b.clientLocalDir, b.clientSecretsDir, nodeAttrs)
 
-	return NewTaskEnv(envMap, envMapClient, deviceEnvs, nodeAttrs, b.clientLocalDir, b.clientAllocDir)
+	return NewTaskEnv(envMap, envMapClient, deviceEnvs, nodeAttrs, b.clientTaskDir, b.clientAllocDir)
 }
 
 // Update task updates the environment based on a new alloc and task.
@@ -802,6 +805,13 @@ func (b *Builder) SetTaskLocalDir(dir string) *Builder {
 func (b *Builder) SetClientAllocDir(dir string) *Builder {
 	b.mu.Lock()
 	b.clientAllocDir = dir
+	b.mu.Unlock()
+	return b
+}
+
+func (b *Builder) SetClientTaskDir(dir string) *Builder {
+	b.mu.Lock()
+	b.clientTaskDir = dir
 	b.mu.Unlock()
 	return b
 }

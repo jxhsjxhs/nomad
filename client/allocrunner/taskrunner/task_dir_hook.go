@@ -78,6 +78,7 @@ func (h *taskDirHook) Prestart(ctx context.Context, req *interfaces.TaskPrestart
 // setEnvvars sets path and host env vars depending on the FS isolation used.
 func setEnvvars(envBuilder *taskenv.Builder, fsi drivers.FSIsolation, taskDir *allocdir.TaskDir, conf *cconfig.Config) {
 
+	envBuilder.SetClientTaskDir(taskDir.Dir)
 	envBuilder.SetClientAllocDir(taskDir.SharedAllocDir)
 	envBuilder.SetClientTaskLocalDir(taskDir.LocalDir)
 	envBuilder.SetClientSecretDir(taskDir.SecretsDir)
