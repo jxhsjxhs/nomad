@@ -122,7 +122,7 @@ server state is authoritative.
 
 - `SchedulerAlgorithm` `(string: "binpack")` - Specifies whether scheduler
   binpacks or spreads allocations on available nodes. Possible values are
-  `"binpack"` and `"spread"`
+  `"binpack"` and `"spread"`.
 
 - `PreemptionConfig` `(PreemptionConfig)` - Options to enable preemption for
   various schedulers.
@@ -133,11 +133,11 @@ server state is authoritative.
 
   - `BatchSchedulerEnabled` `(bool: false)` - Specifies
     whether preemption for batch jobs is enabled. Note that if this is set to
-    true, then batch jobs can preempt any other jobs.
+    true, batch jobs can preempt any other jobs.
 
   - `ServiceSchedulerEnabled` `(bool: false)` - Specifies
     whether preemption for service jobs is enabled. Note that if this is set to
-    true, then service jobs can preempt any other jobs.
+    true, service jobs can preempt any other jobs.
 
 ### Sample Response
 

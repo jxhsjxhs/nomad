@@ -16,7 +16,7 @@ Raft [consensus protocol](/docs/internals/consensus).
 
 Snapshots are exposed as gzipped tar archives which internally contain the Raft
 metadata required to restore, as well as a binary serialized version of the
-Nomad server state. The contents are covered internally by SHA-256 hashes.
+Nomad server state. The contents are verified internally by SHA-256 hashes.
 These hashes are verified during snapshot restore operations. The structure of
 the archive is internal to Nomad and not intended to be used other than for
 restore operations. The archives are not designed to be modified before a
@@ -84,4 +84,3 @@ $ curl \
 
 ~> Some tools default to www/encoded uploads. Nomad expects the snapshot to be
 in pure binary form.
-
