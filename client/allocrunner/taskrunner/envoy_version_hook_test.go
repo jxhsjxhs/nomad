@@ -20,7 +20,7 @@ var (
 	taskEnvDefault = taskenv.NewTaskEnv(nil, nil, map[string]string{
 		"meta.connect.sidecar_image": envoy.ImageFormat,
 		"meta.connect.gateway_image": envoy.ImageFormat,
-	})
+	}, "", "")
 )
 
 func TestEnvoyVersionHook_semver(t *testing.T) {
@@ -140,7 +140,7 @@ func TestEnvoyVersionHook_interpolateImage(t *testing.T) {
 		}
 		hook.interpolateImage(task, taskenv.NewTaskEnv(map[string]string{
 			"MY_ENVOY": "my/envoy",
-		}, nil, nil))
+		}, nil, nil, "", ""))
 		require.Equal(t, "my/envoy", task.Config["image"])
 	})
 

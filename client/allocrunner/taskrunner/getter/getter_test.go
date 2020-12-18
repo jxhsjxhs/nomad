@@ -27,6 +27,14 @@ func (noopReplacer) ReplaceEnv(s string) string {
 	return s
 }
 
+func (noopReplacer) ReplaceEnvClient(s string) string {
+	return s
+}
+
+func (noopReplacer) ClientPath(s string) (string, bool) {
+	return s, false
+}
+
 var noopTaskEnv = noopReplacer{}
 
 // upperReplacer is a version of taskenv.TaskEnv.ReplaceEnv that upper-cases
@@ -35,6 +43,14 @@ type upperReplacer struct{}
 
 func (upperReplacer) ReplaceEnv(s string) string {
 	return strings.ToUpper(s)
+}
+
+func (upperReplacer) ReplaceEnvClient(s string) string {
+	return s
+}
+
+func (upperReplacer) ClientPath(s string) (string, bool) {
+	return s, false
 }
 
 func removeAllT(t *testing.T, path string) {
@@ -95,7 +111,7 @@ func TestGetArtifact_Headers(t *testing.T) {
 
 	// Download the artifact.
 	taskEnv := new(upperReplacer)
-	err = GetArtifact(taskEnv, taskEnv, artifact, taskDir, "")
+	err = GetArtifact(taskEnv, artifact)
 	require.NoError(t, err)
 
 	// Verify artifact exists.
@@ -129,7 +145,7 @@ func TestGetArtifact_FileAndChecksum(t *testing.T) {
 	}
 
 	// Download the artifact
-	if err := GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, ""); err != nil {
+	if err := GetArtifact(noopTaskEnv, artifact); err != nil {
 		t.Fatalf("GetArtifact failed: %v", err)
 	}
 
@@ -163,7 +179,7 @@ func TestGetArtifact_File_RelativeDest(t *testing.T) {
 	}
 
 	// Download the artifact
-	if err := GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, ""); err != nil {
+	if err := GetArtifact(noopTaskEnv, artifact); err != nil {
 		t.Fatalf("GetArtifact failed: %v", err)
 	}
 
@@ -197,7 +213,7 @@ func TestGetArtifact_File_EscapeDest(t *testing.T) {
 	}
 
 	// attempt to download the artifact
-	err = GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, "")
+	err = GetArtifact(noopTaskEnv, artifact)
 	if err == nil || !strings.Contains(err.Error(), "escapes") {
 		t.Fatalf("expected GetArtifact to disallow sandbox escape: %v", err)
 	}
@@ -247,7 +263,7 @@ func TestGetArtifact_InvalidChecksum(t *testing.T) {
 	}
 
 	// Download the artifact and expect an error
-	if err := GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, ""); err == nil {
+	if err := GetArtifact(noopTaskEnv, artifact); err == nil {
 		t.Fatalf("GetArtifact should have failed")
 	}
 }
@@ -312,7 +328,7 @@ func TestGetArtifact_Archive(t *testing.T) {
 		},
 	}
 
-	if err := GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, ""); err != nil {
+	if err := GetArtifact(noopTaskEnv, artifact); err != nil {
 		t.Fatalf("GetArtifact failed: %v", err)
 	}
 
@@ -345,7 +361,7 @@ func TestGetArtifact_Setuid(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, GetArtifact(noopTaskEnv, noopTaskEnv, artifact, taskDir, ""))
+	require.NoError(t, GetArtifact(noopTaskEnv, artifact))
 
 	var expected map[string]int
 

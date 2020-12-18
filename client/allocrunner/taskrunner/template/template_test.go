@@ -1334,7 +1334,10 @@ func TestTaskTemplateManager_Env_InterpolatedDest(t *testing.T) {
 	// Build the env
 	taskEnv := taskenv.NewTaskEnv(
 		map[string]string{"NOMAD_META_path": "exists"},
-		map[string]string{}, map[string]string{})
+		map[string]string{"NOMAD_META_path": "exists"},
+		map[string]string{},
+		map[string]string{},
+		"", "")
 
 	vars, err := loadTemplateEnv(templates, d, taskEnv)
 	require.NoError(err)

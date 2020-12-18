@@ -52,9 +52,6 @@ type templateHook struct {
 
 	// taskDir is the task directory
 	taskDir string
-
-	// shared alloc dir is the shared task alloc dir
-	sharedAllocDir string
 }
 
 func newTemplateHook(config *templateHookConfig) *templateHook {
@@ -80,7 +77,6 @@ func (h *templateHook) Prestart(ctx context.Context, req *interfaces.TaskPrestar
 
 	// Store the current Vault token and the task directory
 	h.taskDir = req.TaskDir.Dir
-	h.sharedAllocDir = req.TaskDir.SharedAllocDir
 	h.vaultToken = req.VaultToken
 
 	// Set vault namespace if specified
@@ -113,7 +109,6 @@ func (h *templateHook) newManager() (unblock chan struct{}, err error) {
 		VaultToken:           h.vaultToken,
 		VaultNamespace:       h.vaultNamespace,
 		TaskDir:              h.taskDir,
-		SharedAllocDir:       h.sharedAllocDir,
 		EnvBuilder:           h.config.envBuilder,
 		MaxTemplateEventRate: template.DefaultMaxTemplateEventRate,
 	})

@@ -95,9 +95,6 @@ type TaskTemplateManagerConfig struct {
 	// TaskDir is the task's directory
 	TaskDir string
 
-	// AllocDir is the shared alloc directory
-	SharedAllocDir string
-
 	// EnvBuilder is the environment variable builder for the task.
 	EnvBuilder *taskenv.Builder
 
@@ -213,7 +210,7 @@ func (tm *TaskTemplateManager) run() {
 	}
 
 	// Read environment variables from env templates before we unblock
-	envMap, err := loadTemplateEnv(tm.config.Templates, tm.config.TaskDir, tm.config.EnvBuilder)
+	envMap, err := loadTemplateEnv(tm.config.Templates, tm.config.TaskDir, tm.config.EnvBuilder.Build())
 	if err != nil {
 		tm.config.Lifecycle.Kill(context.Background(),
 			structs.NewTaskEvent(structs.TaskKilling).
@@ -418,7 +415,7 @@ func (tm *TaskTemplateManager) onTemplateRendered(handledRenders map[string]time
 		}
 
 		// Read environment variables from templates
-		envMap, err := loadTemplateEnv(tm.config.Templates, tm.config.TaskDir, tm.config.EnvBuilder)
+		envMap, err := loadTemplateEnv(tm.config.Templates, tm.config.TaskDir, tm.config.EnvBuilder.Build())
 		if err != nil {
 			tm.config.Lifecycle.Kill(context.Background(),
 				structs.NewTaskEvent(structs.TaskKilling).
@@ -567,45 +564,26 @@ func maskProcessEnv(env map[string]string) map[string]string {
 	return env
 }
 
-// checkEscape returns true if the absolute path testPath escapes both the
-// task working directory and the shared allocation directory.
-func (c *TaskTemplateManagerConfig) checkEscape(test string) bool {
-	for _, p := range []string{c.SharedAllocDir, c.TaskDir} {
-		if !helper.PathEscapesSandbox(p, test) {
-			return false
-		}
-	}
-	return true
-}
-
 // parseTemplateConfigs converts the tasks templates in the config into
 // consul-templates
 func parseTemplateConfigs(config *TaskTemplateManagerConfig) (map[*ctconf.TemplateConfig]*structs.Template, error) {
 	sandboxEnabled := !config.ClientConfig.TemplateConfig.DisableSandbox
-	taskEnv := config.EnvBuilder.BuildClient()
+	taskEnv := config.EnvBuilder.Build()
 
 	ctmpls := make(map[*ctconf.TemplateConfig]*structs.Template, len(config.Templates))
 	for _, tmpl := range config.Templates {
 		var src, dest string
 		if tmpl.SourcePath != "" {
-			src = taskEnv.ReplaceEnv(tmpl.SourcePath)
-			if !filepath.IsAbs(src) {
-				src = filepath.Join(config.TaskDir, src)
-			}
-			src = filepath.Clean(src)
-			escapes := config.checkEscape(src)
+			var escapes bool
+			src, escapes = taskEnv.ClientPath(tmpl.SourcePath)
 			if escapes && sandboxEnabled {
 				return nil, sourceEscapesErr
 			}
 		}
 
 		if tmpl.DestPath != "" {
-			dest = taskEnv.ReplaceEnv(tmpl.DestPath)
-			if !filepath.IsAbs(dest) {
-				dest = filepath.Join(config.TaskDir, dest)
-			}
-			dest = filepath.Clean(dest)
-			escapes := config.checkEscape(dest)
+			var escapes bool
+			dest, escapes = taskEnv.ClientPath(tmpl.DestPath)
 			if escapes && sandboxEnabled {
 				return nil, destEscapesErr
 			}
@@ -740,15 +718,17 @@ func newRunnerConfig(config *TaskTemplateManagerConfig,
 }
 
 // loadTemplateEnv loads task environment variables from all templates.
-func loadTemplateEnv(tmpls []*structs.Template, taskDir string, envBuilder *taskenv.Builder) (map[string]string, error) {
-	clientEnv := envBuilder.BuildClient()
+func loadTemplateEnv(tmpls []*structs.Template, taskDir string, taskEnv *taskenv.TaskEnv) (map[string]string, error) {
 	all := make(map[string]string, 50)
 	for _, t := range tmpls {
 		if !t.Envvars {
 			continue
 		}
 
-		dest := filepath.Join(taskDir, clientEnv.ReplaceEnv(t.DestPath))
+		dest := taskEnv.ReplaceEnvClient(t.DestPath)
+		if !filepath.IsAbs(dest) {
+			dest = filepath.Join(taskDir, dest)
+		}
 		f, err := os.Open(dest)
 		if err != nil {
 			return nil, fmt.Errorf("error opening env template: %v", err)

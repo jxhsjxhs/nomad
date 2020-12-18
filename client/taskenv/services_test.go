@@ -101,11 +101,7 @@ func TestInterpolateServices(t *testing.T) {
 	require.Equal(t, exp, interpolated)
 }
 
-var testEnv = NewTaskEnv(
-	map[string]string{"foo": "bar", "baz": "blah"},
-	nil,
-	nil,
-)
+var testEnv = NewTaskEnv(map[string]string{"foo": "bar", "baz": "blah"}, nil, nil, "", "")
 
 func TestInterpolate_interpolateMapStringSliceString(t *testing.T) {
 	t.Parallel()
@@ -200,7 +196,7 @@ func TestInterpolate_interpolateConnect(t *testing.T) {
 		"protocol2":    "_protocol2",
 		"service1":     "_service1",
 		"host1":        "_host1",
-	}, nil, nil)
+	}, nil, nil, "", "")
 
 	connect := &structs.ConsulConnect{
 		Native: false,
