@@ -307,7 +307,9 @@ func (tc *ConsulTemplateTest) TestTemplatePathInterpolation_SharedAllocDir(f *fr
 
 	e2eutil.WaitForAllocRunning(f.T(), tc.Nomad(), allocID)
 
-	for _, task := range []string{"raw_exec", "docker", "exec"} {
+	for _, task := range []string{"docker", "exec", "raw_exec"} {
+
+		// tests that we can render templates into the shared alloc directory
 		f.NoError(waitForTaskFile(allocID, task, "${NOMAD_ALLOC_DIR}/raw_exec.env",
 			func(out string) bool {
 				return len(out) > 0 && strings.TrimSpace(out) != "/alloc"
@@ -323,12 +325,18 @@ func (tc *ConsulTemplateTest) TestTemplatePathInterpolation_SharedAllocDir(f *fr
 				return strings.TrimSpace(out) == "/alloc"
 			}, nil), "expected shared docker.env to contain '/alloc'")
 
+		// test that we can fetch artifacts into the shared alloc directory
 		for _, a := range []string{"google1.html", "google2.html", "google3.html"} {
 			f.NoError(waitForTaskFile(allocID, task, "${NOMAD_ALLOC_DIR}/"+a,
 				func(out string) bool {
 					return len(out) > 0
 				}, nil), "expected artifact in alloc dir")
 		}
+
+		// test that we can load environment variables rendered with templates using interpolated paths
+		out, err := e2e.Command("nomad", "alloc", "exec", "-task", task, allocID, "sh", "-c", "env")
+		f.NoError(err)
+		f.Contains(out, "FROM=raw_exec")
 	}
 }
 

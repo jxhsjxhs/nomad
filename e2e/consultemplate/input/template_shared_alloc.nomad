@@ -15,6 +15,11 @@ job "template-shared-alloc" {
         args    = ["-c", "sleep 300"]
       }
 
+      lifecycle {
+        hook = "prestart"
+        sidecar = true
+      }
+
       artifact {
         source      = "https://google.com"
         destination = "../alloc/google1.html"
@@ -25,6 +30,14 @@ job "template-shared-alloc" {
         data        = <<EOH
 {{env "NOMAD_ALLOC_DIR"}}
 EOH
+      }
+
+      template {
+        destination = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
+        data = <<EOH
+HELLO_FROM={{env "NOMAD_TASK_NAME"}}
+EOH
+        env = true
       }
 
       resources {
@@ -54,6 +67,12 @@ EOH
 EOH
       }
 
+      template {
+        source = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
+        destination = "${NOMAD_LOCAL_DIR}/hello-from-raw.env"
+        env = true
+      }
+
       resources {
         cpu    = 128
         memory = 64
@@ -77,6 +96,12 @@ EOH
         data        = <<EOH
 {{env "NOMAD_ALLOC_DIR"}}
 EOH
+      }
+
+      template {
+        source = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
+        destination = "${NOMAD_LOCAL_DIR}/hello-from-raw.env"
+        env = true
       }
 
       resources {
