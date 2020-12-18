@@ -16,7 +16,7 @@ job "template-shared-alloc" {
       }
 
       lifecycle {
-        hook = "prestart"
+        hook    = "prestart"
         sidecar = true
       }
 
@@ -34,10 +34,10 @@ EOH
 
       template {
         destination = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
-        data = <<EOH
+        data        = <<EOH
 HELLO_FROM={{env "NOMAD_TASK_NAME"}}
 EOH
-        env = true
+        env         = true
       }
 
       resources {
@@ -68,9 +68,9 @@ EOH
       }
 
       template {
-        source = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
+        source      = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
         destination = "${NOMAD_LOCAL_DIR}/hello-from-raw.env"
-        env = true
+        env         = true
       }
 
       resources {
@@ -99,9 +99,9 @@ EOH
       }
 
       template {
-        source = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
+        source      = "${NOMAD_ALLOC_DIR}/hello-from-raw.env"
         destination = "${NOMAD_LOCAL_DIR}/hello-from-raw.env"
-        env = true
+        env         = true
       }
 
       resources {
